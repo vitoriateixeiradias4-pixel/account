@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { X, CreditCard, QrCode, ArrowLeft, Lock, AlertCircle, Copy, CheckCircle } from "lucide-react"
 import Image from "next/image"
 import type { CartItem } from "@/app/page"
@@ -27,7 +27,6 @@ export default function Checkout({ isOpen, onClose, cartItems, total }: Checkout
   const [isLoading, setIsLoading] = useState(false)
   const [showCardMessage, setShowCardMessage] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("")
 
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: "",
@@ -37,39 +36,6 @@ export default function Checkout({ isOpen, onClose, cartItems, total }: Checkout
   })
 
   const [transactionResult, setTransactionResult] = useState<any>(null)
-
-  const generateQRCode = async (text: string): Promise<string> => {
-    try {
-      const QRCode = (await import("qrcode")).default
-      const qrCodeDataUrl = await QRCode.toDataURL(text, {
-        width: 280,
-        margin: 2,
-        color: {
-          dark: "#000000",
-          light: "#FFFFFF",
-        },
-        errorCorrectionLevel: "M",
-      })
-      return qrCodeDataUrl
-    } catch (error) {
-      console.error("[v0] Erro ao gerar QR code:", error)
-      return ""
-    }
-  }
-
-  useEffect(() => {
-    const generateQR = async () => {
-      if (transactionResult?.qr_code || transactionResult?.pix_code) {
-        const qrCode = transactionResult.qr_code || transactionResult.pix_code
-        const dataUrl = await generateQRCode(qrCode)
-        setQrCodeDataUrl(dataUrl)
-      }
-    }
-
-    if (step === "success" && paymentMethod === "pix") {
-      generateQR()
-    }
-  }, [transactionResult, step, paymentMethod])
 
   if (!isOpen) return null
 
@@ -103,14 +69,13 @@ export default function Checkout({ isOpen, onClose, cartItems, total }: Checkout
         customer: {
           name: customerData.name,
           email: customerData.email,
-          phone: customerData.phone.replace(/\D/g, ""), // Remove formatação do telefone
           document: customerData.document.replace(/\D/g, ""), // Remove formatação do CPF
         },
       }
 
-      console.log("[v0] Enviando dados da transação BlackCat:", transactionData)
+      console.log("[v0] Enviando dados da transação EXPFY Pay:", transactionData)
 
-      const response = await fetch("/api/blackcat/transaction", {
+      const response = await fetch("/api/expfypay/transaction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(transactionData),
@@ -122,7 +87,7 @@ export default function Checkout({ isOpen, onClose, cartItems, total }: Checkout
         throw new Error(result.error || "Erro ao processar pagamento")
       }
 
-      console.log("[v0] Resposta da transação BlackCat:", result)
+      console.log("[v0] Resposta da transação EXPFY Pay:", result)
       setTransactionResult(result)
       setStep("success")
     } catch (error) {
@@ -278,7 +243,7 @@ export default function Checkout({ isOpen, onClose, cartItems, total }: Checkout
   )
 
   const renderSuccess = () => {
-    console.log("[v0] Transaction result BlackCat:", transactionResult)
+    console.log("[v0] Transaction result EXPFY Pay:", transactionResult)
 
     if (paymentMethod === "pix") {
       const qrCode = transactionResult?.qr_code || transactionResult?.pix_code
@@ -322,13 +287,7 @@ export default function Checkout({ isOpen, onClose, cartItems, total }: Checkout
           <p className="text-gray-600 mb-6">Escaneie o QR Code com seu banco ou copie o código PIX abaixo:</p>
 
           <div className="bg-white p-6 rounded-xl border-2 border-gray-200 shadow-lg max-w-sm mx-auto">
-            {qrCodeDataUrl ? (
-              <img
-                src={qrCodeDataUrl || "/placeholder.svg"}
-                alt="QR Code PIX"
-                className="w-full h-auto max-w-[280px] mx-auto rounded-lg"
-              />
-            ) : qrCodeImage ? (
+            {qrCodeImage ? (
               <img
                 src={qrCodeImage || "/placeholder.svg"}
                 alt="QR Code PIX"
@@ -342,7 +301,7 @@ export default function Checkout({ isOpen, onClose, cartItems, total }: Checkout
               <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center mx-auto">
                 <div className="text-center">
                   <QrCode className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                  <span className="text-gray-500 text-sm">Gerando QR Code...</span>
+                  <span className="text-gray-500 text-sm">QR Code não disponível</span>
                 </div>
               </div>
             )}

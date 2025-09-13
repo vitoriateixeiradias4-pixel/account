@@ -4,8 +4,10 @@ import { useState } from "react"
 import Header from "@/components/Header"
 import HeroBanner from "@/components/HeroBanner"
 import EventInfo from "@/components/EventInfo"
-import ProductsSection from "@/components/ProductsSection"
 import TicketSection from "@/components/TicketSection"
+import CamaroteSection from "@/components/CamaroteSection"
+import HalfPriceRules from "@/components/HalfPriceRules"
+import TypicalCostume from "@/components/TypicalCostume"
 import Footer from "@/components/Footer"
 import Cart from "@/components/Cart"
 import OrderSummary from "@/components/OrderSummary"
@@ -63,18 +65,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header cartItemsCount={getTotalItems()} onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="relative pt-16">
+      <main className="relative">
         <HeroBanner />
 
-        {/* Container centralizado para desktop */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-16 py-8">
-            <TicketSection onAddToCart={addToCart} />
             <EventInfo />
-            <ProductsSection onAddToCart={addToCart} />
+            <TicketSection onAddToCart={addToCart} />
+            <CamaroteSection onAddToCart={addToCart} />
+            <HalfPriceRules />
+            <TypicalCostume />
           </div>
         </div>
       </main>
